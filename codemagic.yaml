@@ -1,0 +1,4 @@
+workflows:
+  native-android:
+    name: Native Android
+    instance_type: mac_pro
