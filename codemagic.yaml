@@ -1,4 +1,5 @@
 workflows:
-  native-android:
-    name: Native Android
-    instance_type: mac_pro
+  hello-world:
+    name: Hello world workflow
+    scripts:
+      - echo "Hello World!"
