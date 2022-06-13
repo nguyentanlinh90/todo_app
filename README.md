@@ -9,6 +9,6 @@
 - Can delete Todo by click trash button of each task
 
 * Test:
-- User folder src/androidTest to test function in ViewModel and RoomDatabase
-- With ViewModel: Tt with funtion testTodoViewModel() in TodoViewModelTest.class
+- Use folder src/androidTest to test function in ViewModel and RoomDatabase
+- With ViewModel: Test with funtion testTodoViewModel() in TodoViewModelTest.class
 - With RoomDatabase: Can test some funtion of Room database (ex: add, update, getAll, delete) in TodoDatabaseTest.class
