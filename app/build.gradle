@@ -5,6 +5,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        linhnguyen {
+            storeFile file('/Users/nguyentanlinh/Documents/development/pv/TodoApp/key_store')
+            storePassword 'Linh@2022'
+            keyAlias 'keytodoapp'
+            keyPassword 'Linh@2022'
+        }
+    }
     compileSdk 31
 
     defaultConfig {
@@ -21,6 +29,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.linhnguyen
         }
     }
     compileOptions {

@@ -14,7 +14,6 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.ntl.todoapp.adapter.MyViewPagerAdapter
-import com.ntl.todoapp.common.Logger
 import com.ntl.todoapp.listener.IListenerFragmentInitSuccess
 import com.ntl.todoapp.listener.IListenerHandleTodo
 import com.ntl.todoapp.model.Todo
@@ -25,8 +24,7 @@ import com.ntl.todoapp.viewmodel.TodoViewModel
 import com.ntl.todoapp.common.MyToast
 
 class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragmentInitSuccess {
-    private val todoInComplete = 1
-    private val todoComplete = 2
+    private val todoComplete = true
 
     private lateinit var vpMain: ViewPager2
     private lateinit var bnvMain: BottomNavigationView
@@ -65,12 +63,12 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
                 R.id.menu_incomplete -> {
                     vpMain.currentItem = 1
                     val fragment = supportFragmentManager.fragments[1] as InCompleteFragment
-                    fragment.reloadData(getTodoListByType(todoInComplete, mListTodo))
+                    fragment.reloadData(sortTodoListByStatus(!todoComplete, mListTodo))
                 }
                 R.id.menu_complete -> {
                     vpMain.currentItem = 2
                     val fragment = supportFragmentManager.fragments[2] as CompleteFragment
-                    fragment.reloadData(getTodoListByType(todoComplete, mListTodo))
+                    fragment.reloadData(sortTodoListByStatus(todoComplete, mListTodo))
                 }
             }
             true
@@ -200,22 +198,13 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
         dialog.show()
     }
 
-    private fun getTodoListByType(type: Int, todos: List<Todo>): ArrayList<Todo> {
+    private fun sortTodoListByStatus(status: Boolean, todos: List<Todo>): ArrayList<Todo> {
         val list = ArrayList<Todo>()
-        if (type == todoInComplete) {
-            for (item in todos) {
-                if (!item.isComplete) {
-                    list.add(item)
-                }
-            }
-        } else {
-            for (item in mListTodo) {
-                if (item.isComplete) {
-                    list.add(item)
-                }
+        for (item in todos) {
+            if (item.isComplete == status) {
+                list.add(item)
             }
         }
-
         return list
     }
 
@@ -230,11 +219,11 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
                     }
                     1 -> {
                         val fragment = supportFragmentManager.fragments[1] as InCompleteFragment
-                        fragment.reloadData(getTodoListByType(todoInComplete, it))
+                        fragment.reloadData(sortTodoListByStatus(!todoComplete, it))
                     }
                     2 -> {
                         val fragment = supportFragmentManager.fragments[2] as CompleteFragment
-                        fragment.reloadData(getTodoListByType(todoComplete, it))
+                        fragment.reloadData(sortTodoListByStatus(todoComplete, it))
                     }
                 }
             }
