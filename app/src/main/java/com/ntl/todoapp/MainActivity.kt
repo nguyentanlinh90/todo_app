@@ -23,10 +23,8 @@ import com.ntl.todoapp.view.InCompleteFragment
 import com.ntl.todoapp.viewmodel.TaskViewModel
 import com.ntl.todoapp.common.MyToast
 import com.ntl.todoapp.util.Constants
-import com.ntl.todoapp.util.Utils
 
 class MainActivity : AppCompatActivity(), IListenerHandleTask, IListenerFragmentInitSuccess {
-    private val todoComplete = true
 
     private lateinit var vpMain: ViewPager2
     private lateinit var bnvMain: BottomNavigationView
@@ -65,12 +63,12 @@ class MainActivity : AppCompatActivity(), IListenerHandleTask, IListenerFragment
                 R.id.menu_incomplete -> {
                     vpMain.currentItem = 1
                     val fragment = supportFragmentManager.fragments[1] as InCompleteFragment
-                    fragment.reloadData(sortTodoListByStatus(!todoComplete, mListTask))
+                    fragment.reloadData(sortTaskListByStatus(!Constants.isTaskComplete, mListTask))
                 }
                 R.id.menu_complete -> {
                     vpMain.currentItem = 2
                     val fragment = supportFragmentManager.fragments[2] as CompleteFragment
-                    fragment.reloadData(sortTodoListByStatus(todoComplete, mListTask))
+                    fragment.reloadData(sortTaskListByStatus(Constants.isTaskComplete, mListTask))
                 }
             }
             true
@@ -91,16 +89,22 @@ class MainActivity : AppCompatActivity(), IListenerHandleTask, IListenerFragment
 
     private fun initEvent() {
         fabAdd.setOnClickListener {
-            showDialogHandleTodo(null)
+            showDialogHandleTask(!Constants.isTaskDelete, null)
         }
 
         taskViewModel = ViewModelProvider(this)[TaskViewModel::class.java]
     }
 
-    private fun showDialogHandleTodo(task: Task?) {
+    private fun showDialogHandleTask(isDelete: Boolean, task: Task?) {
+        //task = null: insert, task != null: update
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setContentView(R.layout.dialog_add_task)
+
+        if (isDelete) {
+            dialog.setContentView(R.layout.dialog_delete_task)
+        } else {
+            dialog.setContentView(R.layout.dialog_add_task)
+        }
 
         val window = dialog.window ?: return
 
@@ -117,90 +121,66 @@ class MainActivity : AppCompatActivity(), IListenerHandleTask, IListenerFragment
 
         dialog.setCancelable(false)
 
-        val edtTodo = dialog.findViewById<EditText>(R.id.edt_task)
         val btnCancel = dialog.findViewById<Button>(R.id.bt_cancel)
         val btnConfirm = dialog.findViewById<Button>(R.id.bt_confirm)
-        val tvNote = dialog.findViewById<TextView>(R.id.tv_note)
 
-        if (task != null) {
-            edtTodo.setText(task.name)
-            btnConfirm.text = resources.getString(R.string.update)
+        if (isDelete) {
+            btnConfirm.setOnClickListener {
+                if (task != null) {
+                    taskViewModel.deleteTask(task)
+                    MyToast.short(this, resources.getString(R.string.delete_success))
+                }
+                dialog.dismiss()
+            }
         } else {
-            btnConfirm.text = resources.getString(R.string.add)
-        }
-
-        btnCancel.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        btnConfirm.setOnClickListener {
-
-            val strTask = edtTodo.text.toString()
-
-            if (strTask.isEmpty()) {
-                tvNote.visibility = View.VISIBLE
-                tvNote.text = resources.getString(R.string.please_input_name_of_task)
-                return@setOnClickListener
-            }
-            val todoTemp = Task(false, strTask)
-
-            if (taskViewModel.isTaskExists(todoTemp)) {
-                tvNote.visibility = View.VISIBLE
-                tvNote.text = resources.getString(R.string.task_is_exists)
-                return@setOnClickListener
-            }
+            val edtTask = dialog.findViewById<EditText>(R.id.edt_task)
+            val tvNote = dialog.findViewById<TextView>(R.id.tv_note)
 
             if (task != null) {
-                task.name = strTask
-                taskViewModel.updateTask(task)
-                MyToast.showShort(this, resources.getString(R.string.edit_success))
+                edtTask.setText(task.name)
+                btnConfirm.text = resources.getString(R.string.update)
             } else {
-                taskViewModel.insertTask(todoTemp)
-                MyToast.showShort(this, resources.getString(R.string.add_success))
+                btnConfirm.text = resources.getString(R.string.add)
             }
-            dialog.dismiss()
+
+            btnConfirm.setOnClickListener {
+
+                val strTask = edtTask.text.toString()
+
+                if (strTask.isEmpty()) {
+                    tvNote.visibility = View.VISIBLE
+                    tvNote.text = resources.getString(R.string.please_input_name_of_task)
+                    return@setOnClickListener
+                }
+
+                val taskTemp = Task(false, strTask)
+
+                if (taskViewModel.isTaskExists(taskTemp)) {
+                    tvNote.visibility = View.VISIBLE
+                    tvNote.text = resources.getString(R.string.task_is_exists)
+                    return@setOnClickListener
+                }
+
+                if (task != null) {
+                    task.name = strTask
+                    taskViewModel.updateTask(task)
+                    MyToast.short(this, resources.getString(R.string.edit_success))
+                } else {
+                    taskViewModel.insertTask(taskTemp)
+                    MyToast.short(this, resources.getString(R.string.add_success))
+                }
+                dialog.dismiss()
+            }
+
+            btnCancel.setOnClickListener {
+                dialog.dismiss()
+            }
         }
 
         dialog.show()
     }
 
-    private fun showDialogDeleteTodo(task: Task) {
-        val dialog = Dialog(this)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setContentView(R.layout.dialog_delete_task)
-
-        val window = dialog.window ?: return
-
-        window.setLayout(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.WRAP_CONTENT
-        )
-        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-        val layoutParams = window.attributes
-        layoutParams.gravity = Gravity.CENTER
-
-        window.attributes = layoutParams
-
-        dialog.setCancelable(false)
-
-        val btnCancel = dialog.findViewById<Button>(R.id.bt_cancel)
-        val btnConfirm = dialog.findViewById<Button>(R.id.bt_confirm)
-
-        btnCancel.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        btnConfirm.setOnClickListener {
-            taskViewModel.deleteTask(task)
-            MyToast.showShort(this, resources.getString(R.string.delete_success))
-            dialog.dismiss()
-        }
-
-        dialog.show()
-    }
-
-    private fun sortTodoListByStatus(status: Boolean, tasks: List<Task>): ArrayList<Task> {
+    private fun sortTaskListByStatus(status: Boolean, tasks: List<Task>): ArrayList<Task> {
         val list = ArrayList<Task>()
         for (item in tasks) {
             if (item.isComplete == status) {
@@ -221,11 +201,11 @@ class MainActivity : AppCompatActivity(), IListenerHandleTask, IListenerFragment
                     }
                     1 -> {
                         val fragment = supportFragmentManager.fragments[1] as InCompleteFragment
-                        fragment.reloadData(sortTodoListByStatus(!todoComplete, it))
+                        fragment.reloadData(sortTaskListByStatus(!Constants.isTaskComplete, it))
                     }
                     2 -> {
                         val fragment = supportFragmentManager.fragments[2] as CompleteFragment
-                        fragment.reloadData(sortTodoListByStatus(todoComplete, it))
+                        fragment.reloadData(sortTaskListByStatus(Constants.isTaskComplete, it))
                     }
                 }
             }
@@ -237,10 +217,10 @@ class MainActivity : AppCompatActivity(), IListenerHandleTask, IListenerFragment
     }
 
     override fun doDelete(task: Task) {
-        showDialogDeleteTodo(task)
+        showDialogHandleTask(Constants.isTaskDelete, task)
     }
 
     override fun doEdit(task: Task) {
-        showDialogHandleTodo(task)
+        showDialogHandleTask(!Constants.isTaskDelete, task)
     }
 }
