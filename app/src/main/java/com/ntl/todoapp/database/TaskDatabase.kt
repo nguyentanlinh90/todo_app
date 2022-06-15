@@ -4,25 +4,25 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.Room
-import com.ntl.todoapp.model.Todo
+import com.ntl.todoapp.model.Task
 
-@Database(entities = [Todo::class], version = 1)
-abstract class TodoDatabase : RoomDatabase() {
+@Database(entities = [Task::class], version = 1)
+abstract class TaskDatabase : RoomDatabase() {
 
-    abstract fun getTodoDAO(): TodoDAO
+    abstract fun getTaskDAO(): TaskDAO
 
     companion object {
-        private const val DATABASE_NAME = "todo.db"
+        private const val DATABASE_NAME = "task.db"
 
-        private var instance: TodoDatabase? = null
+        private var instance: TaskDatabase? = null
 
         @JvmStatic
         @Synchronized
-        fun getInstance(context: Context): TodoDatabase? {
+        fun getInstance(context: Context): TaskDatabase? {
             if (instance == null) {
                 instance = Room.databaseBuilder(
                     context.applicationContext,
-                    TodoDatabase::class.java,
+                    TaskDatabase::class.java,
                     DATABASE_NAME
                 )
                     .allowMainThreadQueries()

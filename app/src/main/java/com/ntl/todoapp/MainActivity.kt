@@ -15,15 +15,17 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.ntl.todoapp.adapter.MyViewPagerAdapter
 import com.ntl.todoapp.listener.IListenerFragmentInitSuccess
-import com.ntl.todoapp.listener.IListenerHandleTodo
-import com.ntl.todoapp.model.Todo
+import com.ntl.todoapp.listener.IListenerHandleTask
+import com.ntl.todoapp.model.Task
 import com.ntl.todoapp.view.CompleteFragment
 import com.ntl.todoapp.view.HomeFragment
 import com.ntl.todoapp.view.InCompleteFragment
-import com.ntl.todoapp.viewmodel.TodoViewModel
+import com.ntl.todoapp.viewmodel.TaskViewModel
 import com.ntl.todoapp.common.MyToast
+import com.ntl.todoapp.util.Constants
+import com.ntl.todoapp.util.Utils
 
-class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragmentInitSuccess {
+class MainActivity : AppCompatActivity(), IListenerHandleTask, IListenerFragmentInitSuccess {
     private val todoComplete = true
 
     private lateinit var vpMain: ViewPager2
@@ -32,9 +34,9 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
 
     private lateinit var adapter: MyViewPagerAdapter
 
-    lateinit var todoViewModel: TodoViewModel
+    lateinit var taskViewModel: TaskViewModel
 
-    private var mListTodo: List<Todo> = ArrayList()
+    private var mListTask: List<Task> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,17 +60,17 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
                 R.id.menu_home -> {
                     vpMain.currentItem = 0
                     val fragment = supportFragmentManager.fragments[0] as HomeFragment
-                    fragment.loadData(mListTodo)
+                    fragment.loadData(mListTask)
                 }
                 R.id.menu_incomplete -> {
                     vpMain.currentItem = 1
                     val fragment = supportFragmentManager.fragments[1] as InCompleteFragment
-                    fragment.reloadData(sortTodoListByStatus(!todoComplete, mListTodo))
+                    fragment.reloadData(sortTodoListByStatus(!todoComplete, mListTask))
                 }
                 R.id.menu_complete -> {
                     vpMain.currentItem = 2
                     val fragment = supportFragmentManager.fragments[2] as CompleteFragment
-                    fragment.reloadData(sortTodoListByStatus(todoComplete, mListTodo))
+                    fragment.reloadData(sortTodoListByStatus(todoComplete, mListTask))
                 }
             }
             true
@@ -92,13 +94,13 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
             showDialogHandleTodo(null)
         }
 
-        todoViewModel = ViewModelProvider(this)[TodoViewModel::class.java]
+        taskViewModel = ViewModelProvider(this)[TaskViewModel::class.java]
     }
 
-    private fun showDialogHandleTodo(todo: Todo?) {
+    private fun showDialogHandleTodo(task: Task?) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setContentView(R.layout.dialog_add_todo)
+        dialog.setContentView(R.layout.dialog_add_task)
 
         val window = dialog.window ?: return
 
@@ -120,8 +122,8 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
         val btnConfirm = dialog.findViewById<Button>(R.id.bt_confirm)
         val tvNote = dialog.findViewById<TextView>(R.id.tv_note)
 
-        if (todo != null) {
-            edtTodo.setText(todo.name)
+        if (task != null) {
+            edtTodo.setText(task.name)
             btnConfirm.text = resources.getString(R.string.update)
         } else {
             btnConfirm.text = resources.getString(R.string.add)
@@ -140,20 +142,20 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
                 tvNote.text = resources.getString(R.string.please_input_name_of_task)
                 return@setOnClickListener
             }
-            val todoTemp = Todo(false, strTask)
+            val todoTemp = Task(false, strTask)
 
-            if (todoViewModel.isTodoExists(todoTemp)) {
+            if (taskViewModel.isTaskExists(todoTemp)) {
                 tvNote.visibility = View.VISIBLE
-                tvNote.text = resources.getString(R.string.todo_is_exists)
+                tvNote.text = resources.getString(R.string.task_is_exists)
                 return@setOnClickListener
             }
 
-            if (todo != null) {
-                todo.name = strTask
-                todoViewModel.updateTodo(todo)
+            if (task != null) {
+                task.name = strTask
+                taskViewModel.updateTask(task)
                 MyToast.showShort(this, resources.getString(R.string.edit_success))
             } else {
-                todoViewModel.insertTodo(todoTemp)
+                taskViewModel.insertTask(todoTemp)
                 MyToast.showShort(this, resources.getString(R.string.add_success))
             }
             dialog.dismiss()
@@ -162,10 +164,10 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
         dialog.show()
     }
 
-    private fun showDialogDeleteTodo(todo: Todo) {
+    private fun showDialogDeleteTodo(task: Task) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setContentView(R.layout.dialog_delete_todo)
+        dialog.setContentView(R.layout.dialog_delete_task)
 
         val window = dialog.window ?: return
 
@@ -190,7 +192,7 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
         }
 
         btnConfirm.setOnClickListener {
-            todoViewModel.deleteTodo(todo)
+            taskViewModel.deleteTask(task)
             MyToast.showShort(this, resources.getString(R.string.delete_success))
             dialog.dismiss()
         }
@@ -198,9 +200,9 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
         dialog.show()
     }
 
-    private fun sortTodoListByStatus(status: Boolean, todos: List<Todo>): ArrayList<Todo> {
-        val list = ArrayList<Todo>()
-        for (item in todos) {
+    private fun sortTodoListByStatus(status: Boolean, tasks: List<Task>): ArrayList<Task> {
+        val list = ArrayList<Task>()
+        for (item in tasks) {
             if (item.isComplete == status) {
                 list.add(item)
             }
@@ -209,9 +211,9 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
     }
 
     override fun onFragmentInitSuccess() {
-        todoViewModel.getAllTodoObserver().observe(this) {
+        taskViewModel.getAllTaskObserver().observe(this) {
             if (supportFragmentManager.fragments.isNotEmpty()) {
-                mListTodo = it
+                mListTask = it
                 when (vpMain.currentItem) {
                     0 -> {
                         val fragment = supportFragmentManager.fragments[0] as HomeFragment
@@ -230,15 +232,15 @@ class MainActivity : AppCompatActivity(), IListenerHandleTodo, IListenerFragment
         }
     }
 
-    override fun doUpdateStatus(todo: Todo) {
-        todoViewModel.updateTodo(todo)
+    override fun doUpdateStatus(task: Task) {
+        taskViewModel.updateTask(task)
     }
 
-    override fun doDelete(todo: Todo) {
-        showDialogDeleteTodo(todo)
+    override fun doDelete(task: Task) {
+        showDialogDeleteTodo(task)
     }
 
-    override fun doEdit(todo: Todo) {
-        showDialogHandleTodo(todo)
+    override fun doEdit(task: Task) {
+        showDialogHandleTodo(task)
     }
 }

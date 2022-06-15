@@ -11,10 +11,10 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.ntl.todoapp.MainActivity
 import com.ntl.todoapp.R
-import com.ntl.todoapp.adapter.TodoAdapter
-import com.ntl.todoapp.listener.IListenerItemTodo
-import com.ntl.todoapp.listener.IListenerHandleTodo
-import com.ntl.todoapp.model.Todo
+import com.ntl.todoapp.adapter.TaskAdapter
+import com.ntl.todoapp.listener.IListenerItemTask
+import com.ntl.todoapp.listener.IListenerHandleTask
+import com.ntl.todoapp.model.Task
 
 class HomeFragment : Fragment() {
 
@@ -23,12 +23,12 @@ class HomeFragment : Fragment() {
     }
 
     private var mActivity: MainActivity? = null
-    private var iListenerHandleTodo: IListenerHandleTodo? = null
+    private var iListenerHandleTask: IListenerHandleTask? = null
 
-    private lateinit var adapterInComplete: TodoAdapter
-    private lateinit var adapterComplete: TodoAdapter
-    private var mListInComplete = ArrayList<Todo>()
-    private var mListComplete = ArrayList<Todo>()
+    private lateinit var adapterInComplete: TaskAdapter
+    private lateinit var adapterComplete: TaskAdapter
+    private var mListInComplete = ArrayList<Task>()
+    private var mListComplete = ArrayList<Task>()
 
     private lateinit var rcvInComplete: RecyclerView
     private lateinit var rcvComplete: RecyclerView
@@ -49,7 +49,7 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         mActivity = activity as MainActivity?
-        iListenerHandleTodo = mActivity
+        iListenerHandleTask = mActivity
 
         val view = inflater.inflate(R.layout.home_fragment, container, false)
 
@@ -63,18 +63,18 @@ class HomeFragment : Fragment() {
         ivComplete = view.findViewById(R.id.iv_complete)
         tvComplete = view.findViewById(R.id.tv_complete)
 
-        adapterInComplete = TodoAdapter(mListInComplete, object : IListenerItemTodo {
-            override fun onClickStatusTodo(todo: Todo) {
-                todo.isComplete = true
-                iListenerHandleTodo?.doUpdateStatus(todo)
+        adapterInComplete = TaskAdapter(mListInComplete, object : IListenerItemTask {
+            override fun onClickStatusTask(task: Task) {
+                task.isComplete = true
+                iListenerHandleTask?.doUpdateStatus(task)
             }
 
-            override fun onClickDeleteTodo(todo: Todo) {
-                iListenerHandleTodo?.doDelete(todo)
+            override fun onClickDeleteTask(task: Task) {
+                iListenerHandleTask?.doDelete(task)
             }
 
-            override fun onClickEditTodo(todo: Todo) {
-                iListenerHandleTodo?.doEdit(todo)
+            override fun onClickEditTask(task: Task) {
+                iListenerHandleTask?.doEdit(task)
             }
         })
         rcvInComplete.apply {
@@ -83,18 +83,18 @@ class HomeFragment : Fragment() {
             adapter = adapterInComplete
         }
 
-        adapterComplete = TodoAdapter(mListComplete, object : IListenerItemTodo {
-            override fun onClickStatusTodo(todo: Todo) {
-                todo.isComplete = false
-                iListenerHandleTodo?.doUpdateStatus(todo)
+        adapterComplete = TaskAdapter(mListComplete, object : IListenerItemTask {
+            override fun onClickStatusTask(task: Task) {
+                task.isComplete = false
+                iListenerHandleTask?.doUpdateStatus(task)
             }
 
-            override fun onClickDeleteTodo(todo: Todo) {
-                iListenerHandleTodo?.doDelete(todo)
+            override fun onClickDeleteTask(task: Task) {
+                iListenerHandleTask?.doDelete(task)
             }
 
-            override fun onClickEditTodo(todo: Todo) {
-                iListenerHandleTodo?.doEdit(todo)
+            override fun onClickEditTask(task: Task) {
+                iListenerHandleTask?.doEdit(task)
             }
         })
         rcvComplete.apply {
@@ -105,11 +105,11 @@ class HomeFragment : Fragment() {
         return view
     }
 
-    fun loadData(todos: List<Todo>) {
+    fun loadData(tasks: List<Task>) {
         mListInComplete.clear()
         mListComplete.clear()
 
-        for (item in todos) {
+        for (item in tasks) {
             if (item.isComplete) {
                 mListComplete.add(item)
             } else {
@@ -127,7 +127,7 @@ class HomeFragment : Fragment() {
             llInComplete.visibility = View.VISIBLE
             rcvInComplete.visibility = View.VISIBLE
             tvInComplete.text =
-                String.format(resources.getString(R.string.title_todo), mListInComplete.size)
+                String.format(resources.getString(R.string.title_task), mListInComplete.size)
         } else {
             llInComplete.visibility = View.GONE
             rcvInComplete.visibility = View.GONE

@@ -8,16 +8,16 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ntl.todoapp.R
-import com.ntl.todoapp.listener.IListenerItemTodo
-import com.ntl.todoapp.model.Todo
+import com.ntl.todoapp.listener.IListenerItemTask
+import com.ntl.todoapp.model.Task
 
-class TodoAdapter(todos: List<Todo>, private val listener: IListenerItemTodo) :
-    RecyclerView.Adapter<TodoAdapter.ItemViewHolder>() {
+class TaskAdapter(tasks: List<Task>, private val listener: IListenerItemTask) :
+    RecyclerView.Adapter<TaskAdapter.ItemViewHolder>() {
 
-    private var mList = todos
+    private var mList = tasks
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_todo, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_task, parent, false)
         return ItemViewHolder(view, listener)
 
     }
@@ -30,34 +30,34 @@ class TodoAdapter(todos: List<Todo>, private val listener: IListenerItemTodo) :
         return mList.size
     }
 
-    class ItemViewHolder(itemView: View, private val listener: IListenerItemTodo) :
+    class ItemViewHolder(itemView: View, private val listener: IListenerItemTask) :
         RecyclerView.ViewHolder(itemView) {
-        private val cbTodo: CheckBox = itemView.findViewById(R.id.cb_todo)
-        private val tvTodo: TextView = itemView.findViewById(R.id.tv_todo)
+        private val cbTask: CheckBox = itemView.findViewById(R.id.cb_task)
+        private val tvTask: TextView = itemView.findViewById(R.id.tv_task)
         private val ivDelete: ImageView = itemView.findViewById(R.id.iv_delete)
         private val ivEdit: ImageView = itemView.findViewById(R.id.iv_edit)
 
-        fun bind(todo: Todo) {
-            cbTodo.isChecked = todo.isComplete
-            tvTodo.text = todo.name
+        fun bind(task: Task) {
+            cbTask.isChecked = task.isComplete
+            tvTask.text = task.name
 
-            cbTodo.setOnClickListener {
-                listener.onClickStatusTodo(todo)
+            cbTask.setOnClickListener {
+                listener.onClickStatusTask(task)
             }
 
             ivDelete.setOnClickListener {
-                listener.onClickDeleteTodo(todo)
+                listener.onClickDeleteTask(task)
             }
 
             ivEdit.setOnClickListener {
-                listener.onClickEditTodo(todo)
+                listener.onClickEditTask(task)
             }
         }
 
     }
 
-    fun updateAdapter(todos: List<Todo>) {
-        this.mList = todos
+    fun updateAdapter(tasks: List<Task>) {
+        this.mList = tasks
         notifyDataSetChanged()
     }
 }

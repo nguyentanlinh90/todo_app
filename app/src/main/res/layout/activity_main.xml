@@ -31,7 +31,7 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="16dp"
         android:backgroundTint="@android:color/holo_orange_dark"
-        android:contentDescription="@string/add_todo"
+        android:contentDescription="@string/add_task"
         app:borderWidth="0dp"
         android:src="@drawable/ic_baseline_add_24" />
 </RelativeLayout>

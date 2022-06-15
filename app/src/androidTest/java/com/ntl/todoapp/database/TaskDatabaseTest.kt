@@ -5,7 +5,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ntl.todoapp.model.Todo
+import com.ntl.todoapp.model.Task
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -17,9 +17,9 @@ import org.junit.Rule
 import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
-class TodoDatabaseTest : TestCase() {
-    private lateinit var db: TodoDatabase
-    private lateinit var dao: TodoDAO
+class TaskDatabaseTest : TestCase() {
+    private lateinit var db: TaskDatabase
+    private lateinit var dao: TaskDAO
 
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -27,10 +27,10 @@ class TodoDatabaseTest : TestCase() {
     @Before
     public override fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, TodoDatabase::class.java)
+        db = Room.inMemoryDatabaseBuilder(context, TaskDatabase::class.java)
             .allowMainThreadQueries()
             .build()
-        dao = db.getTodoDAO()
+        dao = db.getTaskDAO()
     }
 
     @After
@@ -42,9 +42,9 @@ class TodoDatabaseTest : TestCase() {
     //test case to insert _todo in room database
     @Test
     fun insertTodo() = runBlocking {
-        val todo = Todo(false, "Test insertTodo")
-        dao.insertTodo(todo)
-        val todos = dao.getAllTodo()
+        val todo = Task(false, "Test insertTodo")
+        dao.insertTask(todo)
+        val todos = dao.getAllTask()
         assertThat(todos?.contains(todo)).isTrue()
     }
 
@@ -52,13 +52,13 @@ class TodoDatabaseTest : TestCase() {
     @Test
     fun deleteTodo() = runBlocking {
         val nameTodoAdd = "Test deleteTodo"
-        val todo = Todo(false, nameTodoAdd)
-        dao.insertTodo(todo)
+        val todo = Task(false, nameTodoAdd)
+        dao.insertTask(todo)
 
-        val todoDelete = dao.getTodoByName(nameTodoAdd)
-        dao.deleteTodo(todoDelete)
+        val todoDelete = dao.getTaskByName(nameTodoAdd)
+        dao.deleteTask(todoDelete)
 
-        val todos = dao.getAllTodo()
+        val todos = dao.getAllTask()
         assertThat(todos).doesNotContain(todo)
     }
 
@@ -66,14 +66,14 @@ class TodoDatabaseTest : TestCase() {
     @Test
     fun editTodo() = runBlocking {
         val nameTodoAdd = "Test editTodo"
-        val todo = Todo(false, nameTodoAdd)
-        dao.insertTodo(todo)
+        val todo = Task(false, nameTodoAdd)
+        dao.insertTask(todo)
 
-        val newTodo = dao.getTodoByName(nameTodoAdd)
+        val newTodo = dao.getTaskByName(nameTodoAdd)
         newTodo?.name = "New $nameTodoAdd"
-        dao.updateTodo(newTodo)
+        dao.updateTask(newTodo)
 
-        val todos = dao.getAllTodo()
+        val todos = dao.getAllTask()
         assertThat(todos?.contains(newTodo)).isTrue()
     }
 }

@@ -6,15 +6,15 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.ntl.todoapp.getOrAwaitValue
-import com.ntl.todoapp.model.Todo
+import com.ntl.todoapp.model.Task
 import junit.framework.TestCase
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class TodoViewModelTest : TestCase() {
-    private lateinit var viewModel: TodoViewModel
+class TaskViewModelTest : TestCase() {
+    private lateinit var viewModel: TaskViewModel
 
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -22,9 +22,9 @@ class TodoViewModelTest : TestCase() {
     @Test
     fun testTodoViewModel() {
         val application = ApplicationProvider.getApplicationContext() as Application
-        viewModel = TodoViewModel(application)
-        viewModel.insertTodo(Todo(false, "Test todo viewmodel"));
-        val result = viewModel.allTodos.getOrAwaitValue().find {
+        viewModel = TaskViewModel(application)
+        viewModel.insertTask(Task(false, "Test todo viewmodel"));
+        val result = viewModel.allTasks.getOrAwaitValue().find {
             !it.isComplete && it.name == "Test todo viewmodel"
         }
         assertThat(result != null).isTrue()
